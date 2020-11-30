@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="14.3.0">
+  <zoom_level>10</zoom_level>
+  <element>
+    <type>com.baselet.element.old.allinone.ActivityDiagramText</type>
+    <coordinates>
+      <x>0</x>
+      <y>0</y>
+      <w>1463</w>
+      <h>1919</h>
+    </coordinates>
+    <panel_attributes>title:OCR-Callover System Model
+Start
+Receipt of Transaction
+Fork
+	[Capture Ticket Image]
+	Transaction ticket image is scan and\store in a designated storage media
+
+	[Capture Record Details]
+	Transaction record details are captured by Inputter,including ticket-id,\ and store in transaction table of a designated database
+Sync
+Start iC4Pro
+Choose Callover option
+If
+	[Auto Callover]
+	Start Auto Callover Module
+	Run Ticket-API
+	Ticket API loops through Ticket-Image storage media and fetch\ available Ticket-Image files each for OCR Module processing
+	While[Next Ticket\available]
+		[Ticket Available]
+		Run OCR Package to extract specific\ printed and handwritten ticket details		
+		If
+			[Extraction\not successful]
+			Insert Ticket-name into\MDB Exception table
+			Make Ticket not available
+
+			[Extraction\successful]
+			Insert extracted details, including Ticket-Id,\ Ticket-Name into MDB Processed table
+			Start Auto-Callover Module
+			Fetch record from transaction\table where Ticket-Id matches
+			Fetch Ticket from Image storage\media where Ticket-name matches
+			If 
+				Ticket details match\ transaction details
+				Callover successful,\Transaction table and\Accepted table updated
+				Make Ticket not available
+
+				Ticket details not match\ transaction details
+				Raise Exception,\Transaction table and\ Exception table updated
+				Make Ticket not available
+			EndIf				
+		EndIf
+	
+		[No Ticket Available]
+		
+	[No Ticket available]
+	
+	[Manual Callover]
+	Start Manual Callover Module
+	Callover Grid display available transactions to call over
+	&gt;Select transaction to callover
+	Call-Id (global var) = Ticket-Id (of selected transaction)
+	Get Ticket-Name from MDB Processed where Ticket-Id=Call-Id 
+	TicketAPI fetches Ticket-Image from storage media\where Filename = Ticket-Name
+	Callover Grid display details of selected transaction\along with Ticket-Image from TicketAPI&gt;
+	Review the displayed transaction
+	If 
+		[Ticket details\ matches\ transaction details]
+		Callover successful,Transaction\ &amp; Accepted tables updated
+		Make Ticket not available
+
+		[Ticket details\ not matches\ transaction details]
+		Raise Exception,Transaction\ &amp; Exception tables updated
+		Make Ticket not available
+	EndIf	
+	Refresh Callover Grid to display any available transactions for call over
+		
+EndIf
+End Callover process~id1	
+End
+
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+</diagram>
